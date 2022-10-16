@@ -11,9 +11,6 @@ app.use(cors());
 const jwt = require("jsonwebtoken");
 var nodemailer = require("nodemailer");
 
-// const cookieParser = require('cookie-parser');
-// app.use(cookieParser);
-
 const JWT_SECRET =
   "hvdvay6ert72839289()aiyg8t87qt72393293883uhefiuh78ttq3ifi78272jbkj?[]]pou89ywe";
 
@@ -33,6 +30,7 @@ app.listen(5000, () => {
   console.log("server started");
 });
 require("./customerDetails");
+require("./ShopOwner");
 
 const customer = mongoose.model("CustomerInfo");
 app.post("/register", async (req, res) => {
@@ -58,6 +56,7 @@ app.post("/register", async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
+  console.log("danyal");
   const { email, password } = req.body;
 
   const user = await customer.findOne({ email });
@@ -78,11 +77,10 @@ app.post("/login", async (req, res) => {
 
 app.get("/logout", (req, res) => {
   console.log("logout");
-  res.clearCookie("jwt", {path: "/"})
+  res.clearCookie("jwt", { path: "/" });
   res.status(200).send("user logout");
-  res.end()
-})
-
+  res.end();
+});
 
 app.post("/userData", async (req, res) => {
   const { token } = req.body;
@@ -185,5 +183,40 @@ app.post("/reset-password/:id/:token", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.json({ status: "Something Went Wrong" });
+  }
+});
+
+// ????????????????????????????????????????????
+//  ShopOwnerInfo
+
+const shopOnwer = mongoose.model("ShopOwnerInfo");
+app.post("/shopowner-register", async (req, res) => {
+  const { fname, lname, email, password, shop_no, shopname, floor, catagorey , phone } =
+    req.body;
+  const encryptedPassword = await bcrypt.hash(password, 10);
+
+  try {
+    const oldShopOwner = await shopOnwer.findOne({ email });
+
+    if (oldShopOwner) {
+      
+      return res.json({ error: "ShopOwner Exists" });
+    }
+    await shopOnwer.create({
+      fname,
+      lname,
+      email,
+      password: encryptedPassword,
+      shop_no,
+      shopname,
+      floor,
+      catagorey,
+      phone
+    });
+    
+    res.send({ status: "ok" });
+  } catch (error) {
+    
+    res.send({ status: "error" });
   }
 });
